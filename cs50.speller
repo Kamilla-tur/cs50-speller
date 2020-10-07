@@ -1,0 +1,138 @@
+#include <stdbool.h>
+#include <stdlib.h>
+#include "dictionary.h"
+#include <ctype.h>
+#include <stdint.h>
+#include <cs50.h>
+#include <stdio.h>
+#include <string.h>
+#include <strings.h>
+#define HASHTABLE_SIZE 26
+// Represents a node in a hash table
+typedef struct node
+{
+    char word[LENGTH + 1];
+    struct node *next;
+}
+node;
+
+// Number of buckets in hash table
+const unsigned int N = 26;
+
+// Hash table
+
+node *table[N];
+
+
+
+// Returns true if word is in dictionary else false
+bool check(const char *word)
+{
+    int index = hash(word);
+
+    node *cursor = table[index];
+
+    while (cursor != NULL)
+   {
+
+    if ( strcasecmp(cursor->word, word) == 0)
+    {
+         return true;
+    }
+
+    cursor = cursor->next;
+  }
+
+   return false;
+}
+
+// Hashes word to a number
+unsigned int hash(const char *word)
+{
+     unsigned int hash = 0;
+    for (int i = 0, n = strlen(word); i < n; i++)
+    {
+        hash = (hash << 2) ^ word[i];
+    }
+    return hash % HASHTABLE_SIZE;
+
+}
+ int count = 0;
+// Loads dictionary into memory, returning true if successful else false
+bool load(const char *dictionary)
+{
+
+    FILE *dic_ptr = fopen(dictionary, "r");
+    if (dic_ptr == NULL)
+    return false;
+for (int i = 0; i < 26; i++)
+{
+    table[i] = NULL;
+}
+    char word[LENGTH];
+
+
+    while(fscanf (dic_ptr, "%s", word)!= EOF)
+    {
+
+        node *n = malloc(sizeof(node));
+    if (n == NULL)
+    {
+    return false;
+    unload();
+    }
+
+    strcpy(n->word, word);
+
+    hash(word);
+    int index = hash(word);
+    if (table[index] != n)
+    {
+      table[index] = n;
+      count++;
+    }
+    else
+    {
+        n->next = table[index];
+        table[index] = n;
+        count++;
+    }
+}
+
+fclose(dic_ptr);
+return true;
+}
+
+// Returns number of words in dictionary if loaded else 0 if not yet loaded
+unsigned int size(void)
+{
+       return count;
+}
+
+// Unloads dictionary from memory, returning true if successful else false
+bool unload(void)
+{
+    node *temp;
+ node *cursor;
+
+    for(int i = 0; i < N; i++)
+    {
+        for (temp = table[i], cursor = temp->next; temp != NULL; temp = cursor, cursor = cursor->next)
+       {
+           free(temp);
+       }
+       free(table[i]);
+    }
+
+    return true;
+     node *head = NULL;
+    node *cursor = head;
+    // freeing linked lists
+    while (cursor != NULL)
+    {
+        node *temp = cursor;
+        cursor = cursor->next;
+        free(temp);
+    }
+    return true;
+}
